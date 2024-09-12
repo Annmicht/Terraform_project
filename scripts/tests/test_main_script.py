@@ -30,3 +30,10 @@ def output_jobs(response, output_file_path=""):
         for i in range(len(response["results"]))
     ]
     company_name = {"company": company_list}
+
+    # the locations
+    location_list = [
+        response["results"][i]["locations"][0]["name"]
+        for i in range(len(response["results"]))
+    ]
+    location_name = {"locations": location_list}
