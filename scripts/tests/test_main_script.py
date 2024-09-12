@@ -37,3 +37,20 @@ def output_jobs(response, output_file_path=""):
         for i in range(len(response["results"]))
     ]
     location_name = {"locations": location_list}
+        # the job name
+    job_list = [response["results"][i]["name"] for i in range(len(response["results"]))]
+    job_name = {"job": job_list}
+
+
+    # the job type
+    job_type_list = [
+        response["results"][i]["type"] for i in range(len(response["results"]))
+    ]
+    job_type = {"job_type": job_type_list}
+
+    # the publication date
+    publication_date_list = [
+        response["results"][i]["publication_date"]
+        for i in range(len(response["results"]))
+    ]
+    publication_date = {"publication_date": publication_date_list}
