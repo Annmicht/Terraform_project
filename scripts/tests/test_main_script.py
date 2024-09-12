@@ -54,3 +54,45 @@ def output_jobs(response, output_file_path=""):
         for i in range(len(response["results"]))
     ]
     publication_date = {"publication_date": publication_date_list}
+
+  # merge the dictionaries with ChainMap and dict "from collections import ChainMap"
+    data = dict(
+            ChainMap(company_name, location_name, job_name, job_type, publication_date)
+        )
+        df = pd.DataFrame.from_dict(data)
+    # Cut publication date to date
+        df["publication_date"] = df["publication_date"].str[:10]
+    # split location to city and country and drop the location column
+        df["city"] = df["locations"].str.split(",").str[0]
+        df["country"] = df["locations"].str.split(",").str[1]
+        df.drop("locations", axis=1, inplace=True)
+    # save the dataframe to a csv file locally first
+    df.to_csv(output_file_path, index=False)
+    print(f"datafrme saved to local file output_file_path")
+
+def upload_to_s3(source_path, bucket, destination):
+    # read secret_access_key of AWS form the .env file
+    print("uploading to AWS S3...")
+    load_dotenv()
+    access_key = os.getenv("access_key")
+    secret_access_key = os.getenv("secret_access_key")
+
+    s3_client = boto3.client(
+            "s3", aws_access_key_id=access_key, aws_secret_access_key=secret_access_key
+        )
+        s3_client.upload_file(source_path, bucket, destination)
+        print("File uploading Done!")
+# main function
+if __name__ == "__main__":
+    file_path = "data/output_jobs.csv"
+
+    app_config = toml.load("config/config.toml")
+    url = app_config["api"]["url"]
+    bucket = app_config["aws"]["bucket"]
+    folder = app_config["aws"]["folder"]
+
+    response = read_api(url=url)
+
+    output_jobs(response=response, output_file_path=file_path)
+
+    upload_to_s3(source_path=file_path, bucket=bucket, destination=folder+file_path)
